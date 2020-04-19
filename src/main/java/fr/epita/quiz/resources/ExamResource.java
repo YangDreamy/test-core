@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 
 import fr.epita.quiz.datamodel.Answer;
 import fr.epita.quiz.services.business.ExamDataService;
+import fr.epita.quiz.services.dao.AnswerDAO;
 
 
 @Path("/exam")
@@ -28,14 +29,19 @@ public class ExamResource {
 	@Inject 
 	ExamDataService examDS;
 	
+	@Inject
+	AnswerDAO answerDao;
+	
 
 	@POST
 	@Path("/answer")
 	@Consumes(value = MediaType.APPLICATION_JSON_VALUE)
 	//@RequestBody general when we use post and put the parameter into the requestbody
-	public Response addAnswerToQuestion(@RequestBody Answer answer) {
+	public Response addAnswerToQuestion(@RequestBody AnswerDTO answerDTO) {
 		//dummy code, to be replaced
-		answer.setId(1l);
+		Answer answer =  new Answer();
+		answer.setContent(answerDTO.getContent());
+		answer.setId(1l);//???
 		try {
 			return Response.created(new URI("/rest/exam/answer/" + answer.getId())).build();
 		} catch (URISyntaxException e) {
@@ -66,7 +72,8 @@ public class ExamResource {
 		//beginning dummmy implementation 开始虚拟的实现  get is read
 		Answer answer = new Answer();
 		answer.setContent("This is a sampleAnswer");
-		return Response.ok(Arrays.asList(answer)).build();
+		AnswerDTO answerDTO = new AnswerDTO(answer);
+		return Response.ok(Arrays.asList(answerDTO)).build();
 	}
 	
 	
@@ -84,10 +91,13 @@ public class ExamResource {
 	
 	//DELETE
 	@DELETE
-	@Path("/answer/{id}")
-	@Produces(value = MediaType.APPLICATION_JSON_VALUE)
-	public Response deleteAnswers(@PathParam("id") long answerId) {
+	@Path("/answer")
+	@Consumes(value = MediaType.APPLICATION_JSON_VALUE)
+	public Response deleteAnswers(@RequestBody AnswerDTO answerDTO) {
 		Answer answer = new Answer();
+		answer.setContent(answerDTO.getContent());
+		answer.setId(1l);/*get the id from the dto*/;
+		answerDao.delete(answer);
 		return Response.ok(Arrays.asList(answer)).build();
 		
 	}
